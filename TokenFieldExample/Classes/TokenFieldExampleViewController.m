@@ -23,7 +23,6 @@
 	tokenFieldView = [[TITokenFieldView alloc] initWithFrame:self.view.bounds];
 	[tokenFieldView setSourceArray:[Names listOfNames]];
 	[self.view addSubview:tokenFieldView];
-	[tokenFieldView release];
 	
 	[tokenFieldView.tokenField setDelegate:self];
 	[tokenFieldView.tokenField addTarget:self action:@selector(tokenFieldFrameDidChange:) forControlEvents:TITokenFieldControlEventFrameDidChange];
@@ -42,7 +41,6 @@
 	[messageView setFont:[UIFont systemFontOfSize:15]];
 	[messageView setText:@"Some message. The whole view resizes as you type, not just the text view."];
 	[tokenFieldView.contentView addSubview:messageView];
-	[messageView release];
 	
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
 	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
@@ -71,7 +69,7 @@
 	
 	NSArray * names = [Names listOfNames];
 	
-	TIToken * token = [tokenFieldView.tokenField addTokenWithTitle:[names objectAtIndex:(arc4random() % names.count)]];
+	TIToken * token = [tokenFieldView.tokenField addTokenWithTitle:names[(arc4random() % names.count)]];
 	[token setAccessoryType:TITokenAccessoryTypeDisclosureIndicator];
 	// If the size of the token might change, it's a good idea to layout again.
 	[tokenFieldView.tokenField layoutTokensAnimated:YES]; 
@@ -82,7 +80,7 @@
 
 - (void)keyboardWillShow:(NSNotification *)notification {
 	
-	CGRect keyboardRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+	CGRect keyboardRect = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
 	keyboardHeight = keyboardRect.size.height > keyboardRect.size.width ? keyboardRect.size.width : keyboardRect.size.height;
 	[self resizeViews];
 }

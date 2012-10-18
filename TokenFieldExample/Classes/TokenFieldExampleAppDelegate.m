@@ -19,19 +19,13 @@
 	UINavigationController * navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
     UITabBarController *tabBarController = [[UITabBarController alloc] init];
     [tabBarController setViewControllers:@[navigationController]];
-	[viewController release];
 	
     [window setRootViewController:tabBarController];
-	[navigationController release];
 	
     [window makeKeyAndVisible];
     
     return YES;
 }
 
-- (void)dealloc {
-    [window release];
-    [super dealloc];
-}
 
 @end

@@ -67,21 +67,18 @@
 	[tokenField addTarget:self action:@selector(tokenFieldFrameDidChange:) forControlEvents:TITokenFieldControlEventFrameDidChange];
 	[tokenField setDelegate:self];
 	[self addSubview:tokenField];
-	[tokenField release];
 	
 	CGFloat tokenFieldBottom = CGRectGetMaxY(tokenField.frame);
 	
 	separator = [[UIView alloc] initWithFrame:CGRectMake(0, tokenFieldBottom, self.bounds.size.width, 1)];
 	[separator setBackgroundColor:[UIColor colorWithWhite:0.7 alpha:1]];
 	[self addSubview:separator];
-	[separator release];
 	
 	// This view is created for convenience, because it resizes and moves with the rest of the subviews.
 	contentView = [[UIView alloc] initWithFrame:CGRectMake(0, tokenFieldBottom + 1, self.bounds.size.width,
 														   self.bounds.size.height - tokenFieldBottom - 1)];
 	[contentView setBackgroundColor:[UIColor clearColor]];
 	[self addSubview:contentView];
-	[contentView release];
 	
 	if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad){
 		
@@ -93,7 +90,6 @@
 		resultsTable = tableViewController.tableView;
 		
 		popoverController = [[UIPopoverController alloc] initWithContentViewController:tableViewController];
-		[tableViewController release];
 	}
 	else
 	{
@@ -104,7 +100,6 @@
 		[resultsTable setDataSource:self];
 		[resultsTable setHidden:YES];
 		[self addSubview:resultsTable];
-		[resultsTable release];
 		
 		popoverController = nil;
 	}
@@ -190,7 +185,7 @@
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath {
 	
-	id representedObject = [resultsArray objectAtIndex:indexPath.row];
+	id representedObject = resultsArray[indexPath.row];
 	
 	if ([tokenField.delegate respondsToSelector:@selector(tokenField:resultsTableView:cellForRepresentedObject:)]){
 		return [tokenField.delegate tokenField:tokenField resultsTableView:tableView cellForRepresentedObject:representedObject];
@@ -200,7 +195,7 @@
     UITableViewCell * cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     NSString * subtitle = [self searchResultSubtitleForRepresentedObject:representedObject];
 	
-	if (!cell) cell = [[[UITableViewCell alloc] initWithStyle:(subtitle ? UITableViewCellStyleSubtitle : UITableViewCellStyleDefault) reuseIdentifier:CellIdentifier] autorelease];
+	if (!cell) cell = [[UITableViewCell alloc] initWithStyle:(subtitle ? UITableViewCellStyleSubtitle : UITableViewCellStyleDefault) reuseIdentifier:CellIdentifier];
 	
 	[cell.textLabel setText:[self searchResultStringForRepresentedObject:representedObject]];
 	[cell.detailTextLabel setText:subtitle];
@@ -210,10 +205,9 @@
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
 	
-	id representedObject = [resultsArray objectAtIndex:indexPath.row];
+	id representedObject = resultsArray[indexPath.row];
     TIToken * token = [[TIToken alloc] initWithTitle:[self displayStringForRepresentedObject:representedObject] representedObject:representedObject];
     [tokenField addToken:token];
-	[token release];
 	
 	[tableView deselectRowAtIndexPath:indexPath animated:YES];
 	[self setSearchResultsVisible:NO];
@@ -353,10 +347,6 @@
 
 - (void)dealloc {
 	[self setDelegate:nil];
-	[resultsArray release];
-	[sourceArray release];
-	[popoverController release];
-	[super dealloc];
 }
 
 @end
@@ -368,14 +358,14 @@ NSString * const kTextEmpty = @"\u200B"; // Zero-Width Space
 NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 
 @interface TITokenFieldInternalDelegate ()
-@property (nonatomic, assign) id <UITextFieldDelegate> delegate;
-@property (nonatomic, assign) TITokenField * tokenField;
+@property (nonatomic, weak) id <UITextFieldDelegate> delegate;
+@property (nonatomic, weak) TITokenField * tokenField;
 @end
 
 @interface TITokenField ()
 @property (nonatomic, readonly) CGFloat leftViewWidth;
 @property (nonatomic, readonly) CGFloat rightViewWidth;
-@property (nonatomic, readonly) UIScrollView * scrollView;
+@property (weak, nonatomic, readonly) UIScrollView * scrollView;
 @end
 
 @interface TITokenField (Private)
@@ -438,7 +428,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	tokens = [[NSMutableArray alloc] init];
 	editable = YES;
 	removesTokensOnEndEditing = YES;
-	tokenizingCharacters = [[NSCharacterSet characterSetWithCharactersInString:@","] retain];
+	tokenizingCharacters = [NSCharacterSet characterSetWithCharactersInString:@","];
 }
 
 #pragma mark Property Overrides
@@ -466,14 +456,14 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 }
 
 - (NSArray *)tokens {
-	return [[tokens copy] autorelease];
+	return [tokens copy];
 }
 
 - (NSArray *)tokenTitles {
 	
 	NSMutableArray * titles = [[NSMutableArray alloc] init];
 	[tokens enumerateObjectsUsingBlock:^(TIToken * token, NSUInteger idx, BOOL *stop){[titles addObject:token.title];}];
-	return [titles autorelease];
+	return titles;
 }
 
 - (NSArray *)tokenObjects {
@@ -482,7 +472,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	[tokens enumerateObjectsUsingBlock:^(TIToken * token, NSUInteger idx, BOOL *stop){
 		[objects addObject:(token.representedObject ? token.representedObject : token.title)];
 	}];
-	return [objects autorelease];
+	return objects;
 }
 
 - (UIScrollView *)scrollView {
@@ -520,10 +510,9 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 			CGFloat availableWidth = self.bounds.size.width - self.leftView.bounds.size.width - self.rightView.bounds.size.width;
 			
 			if (tokens.count > 1 && untokSize.width > availableWidth){
-				untokenized = [NSString stringWithFormat:@"%d recipients", titles.count];
+				untokenized = [NSString stringWithFormat:@"%@ & %d others", [tokens[0] title], (titles.count - 1)];
 			}
 			
-			[titles release];
 		}
 		
 		[self setText:untokenized];
@@ -552,6 +541,18 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 }
 
 #pragma mark Token Handling
+
+- (TIToken *)addTokenWithTitle:(NSString *)title respresentedObject:(id)object {
+	
+    if (title.length){
+        TIToken * token = [[TIToken alloc] initWithTitle:title representedObject:object font:self.font];
+        [self addToken:token];
+		return token;
+    }
+	
+    return nil;
+}
+
 - (TIToken *)addTokenWithTitle:(NSString *)title {
 	return [self addTokenWithTitle:title representedObject:nil];
 }
@@ -561,7 +562,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	if (title.length){
 		TIToken * token = [[TIToken alloc] initWithTitle:title representedObject:object font:self.font];
 		[self addToken:token];
-		return [token autorelease];
+		return token;
 	}
 	
 	return nil;
@@ -603,9 +604,6 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 	}
 	
 	if (shouldRemove){
-		
-		[[token retain] autorelease];
-		
 		[token removeFromSuperview];
 		[tokens removeObject:token];
 		
@@ -752,7 +750,7 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 
 #pragma mark Left / Right view stuff
 - (void)setPromptText:(NSString *)text {
-	
+	_promptText = text;
 	if (text){
 		
 		UILabel * label = (UILabel *)self.leftView;
@@ -760,7 +758,6 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 			label = [[UILabel alloc] initWithFrame:CGRectZero];
 			[label setTextColor:[UIColor colorWithWhite:0.5 alpha:1]];
 			[self setLeftView:label];
-			[label release];
 			
 			[self setLeftViewMode:UITextFieldViewModeAlways];
 		}
@@ -830,10 +827,6 @@ NSString * const kTextHidden = @"\u200D"; // Zero-Width Joiner
 
 - (void)dealloc {
 	[self setDelegate:nil];
-	[internalDelegate release];
-	[tokens release];
-	[tokenizingCharacters release];
-    [super dealloc];
 }
 
 @end
@@ -945,6 +938,7 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 @synthesize font;
 @synthesize tintColor;
 @synthesize accessoryType;
+@synthesize accessoryView;
 @synthesize maxWidth;
 
 #pragma mark Init
@@ -961,10 +955,10 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	if ((self = [super init])){
 		
 		title = [aTitle copy];
-		representedObject = [object retain];
+		representedObject = object;
 		
-		font = [aFont retain];
-		tintColor = [[TIToken blueTintColor] retain];
+		font = aFont;
+		tintColor = [TIToken blueTintColor];
 		
 		accessoryType = TITokenAccessoryTypeNone;
 		maxWidth = 200;
@@ -997,7 +991,6 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	
 	if (newTitle){
 		NSString * copy = [newTitle copy];
-		[title release];
 		title = copy;
 		
 		[self sizeToFit];
@@ -1009,10 +1002,18 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	if (!newFont) newFont = [UIFont systemFontOfSize:14];
 	
 	if (font != newFont){
-		[font release];
-		font = [newFont retain];
+		font = newFont;
 		[self sizeToFit];
 	}
+}
+
+- (void)setAccessoryView:(UIView *)accessoryView1 {
+    if (accessoryView != accessoryView1) {
+        [accessoryView removeFromSuperview];
+        accessoryView = accessoryView1;
+        [self addSubview:accessoryView];
+        [self sizeToFit];
+    }
 }
 
 - (void)setTintColor:(UIColor *)newTintColor {
@@ -1020,8 +1021,7 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	if (!newTintColor) newTintColor = [TIToken blueTintColor];
 	
 	if (tintColor != newTintColor){
-		[tintColor release];
-		tintColor = [newTintColor retain];
+		tintColor = newTintColor;
 		[self setNeedsDisplay];
 	}
 }
@@ -1066,10 +1066,31 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 		accessoryWidth += floorf(hTextPadding / 2);
 	}
 	
-	CGSize titleSize = [title sizeWithFont:font forWidth:(maxWidth - hTextPadding - accessoryWidth) lineBreakMode:kLineBreakMode];
-	CGFloat height = floorf(titleSize.height + vTextPadding);
+	BOOL showAccessoryView = accessoryType == TITokenAccessoryTypeNone && accessoryView;
+    if(showAccessoryView) {
+        accessoryWidth = accessoryView.frame.size.width;
+    }
 	
-	[self setFrame:((CGRect){self.frame.origin, {MAX(floorf(titleSize.width + hTextPadding + accessoryWidth), height - 3), height}})];
+	
+    CGSize titleSize = [title sizeWithFont:font forWidth:(maxWidth - hTextPadding - accessoryWidth) lineBreakMode:kLineBreakMode];
+    CGSize emptyTitleSize = [@" " sizeWithFont:font forWidth:(maxWidth - hTextPadding - accessoryWidth) lineBreakMode:kLineBreakMode];
+   	CGFloat height = floorf(titleSize.height + vTextPadding);
+	
+    // the title is empty, make sure that the bubble is high as if there were actually some text
+    if([title isEqualToString:@""]) {
+        height = floorf(emptyTitleSize.height + vTextPadding);
+    }
+	
+   	[self setFrame:((CGRect){self.frame.origin, {MAX(floorf(titleSize.width + hTextPadding + accessoryWidth), height - 3), height}})];
+	
+    if (showAccessoryView) {
+        //CGPoint arrowPoint = CGPointMake(self.bounds.size.width - floorf(hTextPadding / 2), (self.bounds.size.height / 2) - 1);
+        CGPoint arrowPoint = CGPointMake(self.bounds.size.width - floorf(hTextPadding / 2) - accessoryView.frame.size.width, (self.bounds.size.height / 2) - (accessoryView.frame.size.height / 2));
+		
+        accessoryView.frame = CGRectMake(arrowPoint.x, arrowPoint.y, accessoryView.frame.size.width, accessoryView.frame.size.height);
+		
+    }
+	
 	[self setNeedsDisplay];
 }
 
@@ -1247,12 +1268,5 @@ CGPathRef CGPathCreateDisclosureIndicatorPath(CGPoint arrowPointFront, CGFloat h
 	return [NSString stringWithFormat:@"<TIToken %p; title = \"%@\"; representedObject = \"%@\">", self, title, representedObject];
 }
 
-- (void)dealloc {
-	[title release];
-	[representedObject release];
-	[font release];
-	[tintColor release];
-    [super dealloc];
-}
 
 @end

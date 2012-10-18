@@ -14,8 +14,7 @@
 	
 	// Generated with http://www.kleimo.com/random/name.cfm
 	
-	return [NSArray arrayWithObjects:
-			@"Samuel Prescott",
+	return @[@"Samuel Prescott",
 			@"Grace Mcburney", 
 			@"Rosemary Sells",
 			@"Janet Canady",
@@ -73,8 +72,7 @@
 			@"Sparkle Mousa",
 			@"Chantay Palczynski",
 			@"Denver Perfater",
-			@"Tom Irving",
-			nil];
+			@"Tom Irving"];
 }
 
 @end
