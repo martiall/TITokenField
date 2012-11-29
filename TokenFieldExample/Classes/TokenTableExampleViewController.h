@@ -16,8 +16,8 @@
     UITextField *_textFieldSubject;
 
     CGFloat _oldHeight;
-
-
 }
+
+@property (nonatomic, weak) TITokenField *lastSelectedTokenField;
 
 @end
