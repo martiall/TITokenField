@@ -319,6 +319,8 @@
 	
 	ABPeoplePickerNavigationController *peoplePicker = [[ABPeoplePickerNavigationController alloc] init];
 	peoplePicker.peoplePickerDelegate = self;
+	peoplePicker.displayedProperties = @[ @(kABPersonFirstNameProperty), @(kABPersonLastNameProperty), @(kABPersonEmailProperty) ];
+
 	[self.navigationController presentModalViewController:peoplePicker animated:YES];
 	// Show some kind of contacts picker in here.
 	// For now, here's how to add and customize tokens.

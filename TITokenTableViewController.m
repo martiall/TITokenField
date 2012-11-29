@@ -177,7 +177,6 @@
 
 - (void)setTokenFieldFont:(UIFont *)tokenFieldFont
 {
-	
 	if (_tokenFieldFont != tokenFieldFont)
 	{
 		_tokenFieldFont = tokenFieldFont;
@@ -209,20 +208,14 @@
         }
         
         return rows;
-    }
-    if (tableView == self.resultsTable) {
+    } else if (tableView == self.resultsTable) {
         return self.resultsArray.count;
     }
-    return 0;
-    
+    return 0;   
 }
 
-
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
-    
     if (tableView == self.tableView) {
-        
-        
         if (indexPath.row < self.tokenDataSource.numberOfTokenRows)
 		{
 			NSString *promptAtRow =
@@ -242,8 +235,7 @@
             }
         }
         
-    }
-    if (tableView == self.resultsTable) {
+    } else if (tableView == self.resultsTable) {
         //todo
         //        if (tokenField && [tokenField.delegate respondsToSelector:@selector(tokenField:resultsTableView:heightForRowAtIndexPath:)]){
         //       		return [tokenField.delegate tokenField:tokenField resultsTableView:tableView heightForRowAtIndexPath:indexPath];
@@ -252,13 +244,11 @@
        	return 44;
     }
     
-    
     return 0;
 }
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    
     UITableViewCell *cell = nil;
     // DISPLAYING THE TOKEN TABLE
     if (tableView == self.tableView) {
@@ -279,10 +269,7 @@
                 [cell.contentView addSubview:tokenField];
             }
             
-        }
-		
-		else
-		{
+        } else {
             // another cell that is not a TIToken (e.g. subject, body)
             if ([self.tokenDataSource respondsToSelector:@selector(tokenTableView:cellForRowAtIndexPath:)]) {
                 
@@ -292,14 +279,9 @@
             }
         }
         
-    }
-    
-    
-    // DISPLAYING THE SEARCH RESULT
-    if (tableView == self.resultsTable) {
+    } else if (tableView == self.resultsTable) { // DISPLAYING THE SEARCH RESULT
         id representedObject = self.resultsArray[(NSUInteger) indexPath.row];
         
-
         //todo, shall the delegate be able to give a result cell ?
         if ([self.currentSelectedTokenField.delegate respondsToSelector:@selector(tokenField:resultsTableView:cellForRepresentedObject:)])
 		{
@@ -329,18 +311,12 @@
         
     }
     
-    
-    
-    
-    // Configure the cell...
-    
     return cell;
 }
 
 #pragma mark - Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-
     if (tableView == self.tableView) {
         if ([self.delegate respondsToSelector:@selector(tokenTableViewController:didSelectRowAtIndex:)]) {
             NSInteger row = indexPath.row - self.tokenDataSource.numberOfTokenRows;
@@ -348,8 +324,7 @@
         }
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
     }
-
-    if (tableView == self.resultsTable) {
+    else if (tableView == self.resultsTable) {
         
         TITokenField *tokenField = self.currentSelectedTokenField;
         if (tokenField) {
@@ -361,10 +336,7 @@
             [self setSearchResultsVisible:NO forTokenField:tokenField];
         }
     }
-    
 }
-
-#pragma mark TextField Methods
 
 #pragma mark TextField Methods
 
@@ -380,11 +352,7 @@
     while (cell && ![cell isKindOfClass:[UITableViewCell class]]) {
         cell = cell.superview;
     }
-    
-    
-    
-    
-    
+
 	[self.resultsArray removeAllObjects];
 	[self.resultsTable reloadData];
 }
@@ -421,7 +389,6 @@
 
 #pragma mark Results Methods
 - (NSString *)displayStringForRepresentedObject:(id)object {
-    
     TITokenField *tokenField = self.currentSelectedTokenField;
     
 	if ([tokenField.delegate respondsToSelector:@selector(tokenField:displayStringForRepresentedObject:)]){
@@ -446,7 +413,6 @@
 }
 
 - (NSString *)searchResultSubtitleForRepresentedObject:(id)object inTokenField:(TITokenField *)tokenField {
-    
 	if ([tokenField.delegate respondsToSelector:@selector(tokenField:searchResultSubtitleForRepresentedObject:)]){
 		return [tokenField.delegate tokenField:tokenField searchResultSubtitleForRepresentedObject:object];
 	}
@@ -455,7 +421,6 @@
 }
 
 - (void)setSearchResultsVisible:(BOOL)visible forTokenField:(TITokenField *)tokenField {
-    
     // dont set it twice
     if (_searchResultIsVisible == visible) {
         return;
@@ -513,9 +478,7 @@
 					[self.resultsTable setHidden:NO];
 				}
 			}];
-	
         }
-		
 		else {
             // hiding result table, scroll back to where we were,
 			[self.tableView setContentOffset:_contentOffsetBeforeResultTable];
@@ -587,14 +550,10 @@
 					 permittedArrowDirections:UIPopoverArrowDirectionUp animated:animated];
 }
 
-
-
 - (void)tokenFieldChangedEditing:(TITokenField *)tokenField {
 	// There's some kind of annoying bug where UITextFieldViewModeWhile/UnlessEditing doesn't do anything.
 	[tokenField setRightViewMode:(tokenField.editing ? UITextFieldViewModeAlways : UITextFieldViewModeNever)];
 }
-
-
 
 -(void) updateContentSize {
     [self.tableView beginUpdates];
@@ -602,23 +561,19 @@
 }
 
 
-- (void)keyboardWillShow:(NSNotification *)notification {
-    
+- (void)keyboardWillShow:(NSNotification *)notification {    
 	CGRect keyboardRect = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
 	_keyboardHeight = keyboardRect.size.height > keyboardRect.size.width ? keyboardRect.size.width : keyboardRect.size.height;
-    
+    self.tableView.frame = CGRectMake(self.tableView.frame.origin.x, self.tableView.frame.origin.y, self.tableView.frame.size.width, self.tableView.frame.size.height - _keyboardHeight);
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification {
 	_keyboardHeight = 0;
-    
+    self.tableView.frame = CGRectMake(self.tableView.frame.origin.x, self.tableView.frame.origin.y, self.tableView.frame.size.width, self.view.bounds.size.height);
 }
 
 - (void)dealloc {
 	[self setDelegate:nil];
 }
-
-
-
 
 @end
