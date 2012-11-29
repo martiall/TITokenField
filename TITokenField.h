@@ -39,6 +39,10 @@
 - (void)tokenField:(TITokenField *)tokenField didAddToken:(TIToken *)token;
 - (BOOL)tokenField:(TITokenField *)tokenField willRemoveToken:(TIToken *)token;
 - (void)tokenField:(TITokenField *)tokenField didRemoveToken:(TIToken *)token;
+- (void)tokenField:(TITokenField *)tokenField didTapOnAccessoryButton:(id)button;
+
+// Check if token is selected to determine whether to show more info about the token
+- (void)tokenField:(TITokenField *)tokenField didTouchUpOnToken:(TIToken *)token;
 
 - (void)tokenField:(TITokenField *)tokenField didFinishSearch:(NSArray *)matches;
 - (NSString *)tokenField:(TITokenField *)tokenField displayStringForRepresentedObject:(id)object;
@@ -48,15 +52,9 @@
 - (CGFloat)tokenField:(TITokenField *)tokenField resultsTableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath;
 @end
 
-@protocol TITokenFieldDataSource <NSObject>
-
-
-@end
-
 @interface TITokenFieldInternalDelegate : NSObject <UITextFieldDelegate> {
 	
-	__weak id <UITextFieldDelegate> delegate;
-	__weak TITokenField * tokenField;
+
 }
 
 @end
@@ -80,6 +78,9 @@
 	UIPopoverController * popoverController;
 }
 
+@property (nonatomic) CGFloat separatorHeight;
+@property (nonatomic, strong) UIColor *separatorColor;
+
 @property (nonatomic, assign) BOOL showAlreadyTokenized;
 @property (nonatomic, readonly) TITokenField * tokenField;
 @property (nonatomic, readonly) UIView * separator;
@@ -87,6 +88,9 @@
 @property (nonatomic, readonly) UIView * contentView;
 @property (nonatomic, copy) NSArray * sourceArray;
 @property (weak, nonatomic, readonly) NSArray * tokenTitles;
+
+// To show/hide the token fields
+@property (nonatomic) BOOL showTokenFields;
 
 - (void)updateContentSize;
 
@@ -130,9 +134,15 @@ typedef enum {
 @property (nonatomic, strong) NSCharacterSet * tokenizingCharacters;
 @property (nonatomic, weak) NSString * promptText;
 
+@property (nonatomic) BOOL visible;
+
+- (void)setVisible:(BOOL)visible animated:(BOOL)animated;
+
 - (void)addToken:(TIToken *)title;
 - (TIToken *)addTokenWithTitle:(NSString *)title;
 - (TIToken *)addTokenWithTitle:(NSString *)title representedObject:(id)object;
+- (void)addTokens:(NSArray *)tokensArray;
+
 - (void)removeToken:(TIToken *)token;
 - (void)removeAllTokens;
 
@@ -143,6 +153,10 @@ typedef enum {
 
 - (void)layoutTokensAnimated:(BOOL)animated;
 - (void)setResultsModeEnabled:(BOOL)enabled animated:(BOOL)animated;
+
+// When setting accessory view via TITokenTableVC, we hook up the tapping
+// action of the accessory view to its TokenField for a delegate callback
+- (void)didTapOnAccessoryView:(id)view;
 
 // Pass nil to hide label
 - (void)setPromptText:(NSString *)aText;
@@ -164,11 +178,13 @@ typedef enum {
 	
 	UIFont * font;
 	UIColor * tintColor;
-	
-	UIView *accessoryView;
+
+    UIView *accessoryView;
 	
 	TITokenAccessoryType accessoryType;
 	CGFloat maxWidth;
+
+
 }
 
 @property (nonatomic, copy) NSString * title;
@@ -178,6 +194,7 @@ typedef enum {
 @property (nonatomic, assign) TITokenAccessoryType accessoryType;
 @property (nonatomic, strong) UIView * accessoryView;
 @property (nonatomic, assign) CGFloat maxWidth;
+
 
 - (id)initWithTitle:(NSString *)aTitle;
 - (id)initWithTitle:(NSString *)aTitle representedObject:(id)object;

@@ -8,57 +8,62 @@
 
 #import "TITokenTableViewController.h"
 
-
-
-
-
-
 @interface TITokenTableViewController ()
+
+@property(strong) UIPopoverController *popoverController;
+@property(strong) NSMutableArray *resultsArray;
+@property(strong) UITableView *resultsTable;
+
+@property(assign) CGFloat keyboardHeight;
+@property(assign) BOOL searchResultIsVisible;
+@property(assign) CGPoint contentOffsetBeforeResultTable;
 
 @end
 
-@implementation TITokenTableViewController {
-    
-    
-    
-}
+@implementation TITokenTableViewController
 
-@synthesize showAlreadyTokenized, sourceArray;
+@synthesize popoverController=popoverController;
 
-- (id)initWithStyle:(UITableViewStyle)style
+- (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
-    self = [super initWithStyle:style];
-    if (self) {
-        // Custom initialization
-
-    }
-    return self;
+	self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
+	
+	if (self)
+	{
+		
+	}
+	
+	return self;
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+ 
+	self.tableView = [[UITableView alloc] initWithFrame:self.view.bounds
+												  style:UITableViewStylePlain];
+	
+	self.tableView.autoresizingMask =
+	UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+	
+	self.tableView.delegate = self;
+	self.tableView.dataSource = self;
+	
+	[self.view insertSubview:self.tableView atIndex:0];
     
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-    
-    [self setup];
+	[self setup];
 }
 
 
 -(void) setup {
-    _tokenFields = [NSMutableDictionary dictionary];
+    self.tokenFields = [NSMutableDictionary dictionary];
     
-    
-    
-    //for(NSString *tokenPromptText in [self.tokenDataSource tokenFieldPrompts]) {
     for(NSUInteger i = 0; i < self.tokenDataSource.numberOfTokenRows; i++) {
         NSString *tokenPromptText = [self.tokenDataSource tokenFieldPromptAtRow:i];
         
         TITokenField *tokenField = [[TITokenField alloc] initWithFrame:CGRectMake(0, 0, self.tableView.bounds.size.width, 42)];
+		tokenField.autoresizingMask = UIViewAutoresizingFlexibleWidth;
+		
         [tokenField addTarget:self action:@selector(tokenFieldDidBeginEditing:) forControlEvents:UIControlEventEditingDidBegin];
         [tokenField addTarget:self action:@selector(tokenFieldDidEndEditing:) forControlEvents:UIControlEventEditingDidEnd];
         [tokenField addTarget:self action:@selector(tokenFieldTextDidChange:) forControlEvents:UIControlEventEditingChanged];
@@ -68,62 +73,74 @@
         [tokenField addTarget:self action:@selector(tokenFieldChangedEditing:) forControlEvents:UIControlEventEditingDidBegin];
         [tokenField addTarget:self action:@selector(tokenFieldChangedEditing:) forControlEvents:UIControlEventEditingDidEnd];
         
+		if (self.tokenizingCharacters)
+			[tokenField setTokenizingCharacters:self.tokenizingCharacters];
+		
+		if (self.tokenFieldFont)
+			[tokenField setFont:self.tokenFieldFont];
+		
         [tokenField setDelegate:self];
         [tokenField setPromptText:tokenPromptText];
         
-        
-        
         UIView *accessoryView = [self.tokenDataSource accessoryViewForField:tokenField];
-        if(accessoryView) {
+        if (accessoryView) {
             [tokenField setRightView:accessoryView];
+			
+			// Hook up the didTapOnAccesoryView action
+			if ([accessoryView respondsToSelector:@selector(addTarget:action:forControlEvents:)])
+			{
+				[(id) accessoryView addTarget:tokenField
+									   action:@selector(didTapOnAccessoryView:)
+							 forControlEvents:UIControlEventTouchUpInside];
+			}
         }
         
-        [_tokenFields setObject:tokenField forKey:tokenPromptText];
+        (self.tokenFields)[tokenPromptText] = tokenField;
         
     }
     
+    self.showAlreadyTokenized = NO;
+    self.resultsArray = [[NSMutableArray alloc] init];
     
-
-    
-    showAlreadyTokenized = NO;
-    resultsArray = [[NSMutableArray alloc] init];
-
-    //todo
-    //[self setSourceArray:[Names listOfNames]];
-    
-    
-    
-    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad){
+    if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+	{
         
    		UITableViewController * tableViewController = [[UITableViewController alloc] initWithStyle:UITableViewStylePlain];
    		[tableViewController.tableView setDelegate:self];
    		[tableViewController.tableView setDataSource:self];
    		[tableViewController setContentSizeForViewInPopover:CGSizeMake(400, 400)];
         
-   		resultsTable = tableViewController.tableView;
+   		self.resultsTable = tableViewController.tableView;
         
-   		popoverController = [[UIPopoverController alloc] initWithContentViewController:tableViewController];
+   		self.popoverController = [[UIPopoverController alloc] initWithContentViewController:tableViewController];
    	}
    	else
    	{
-   		resultsTable = [[UITableView alloc] initWithFrame:CGRectMake(0, 0 + 1, self.view.bounds.size.width, self.view.bounds.size.height)];
+   		self.resultsTable = [[UITableView alloc] initWithFrame:CGRectMake(0, 0 + 1, self.view.bounds.size.width, self.view.bounds.size.height)];
+		
+		self.resultsTable.autoresizingMask = UIViewAutoresizingFlexibleWidth;
         
-   		[resultsTable setSeparatorColor:[UIColor colorWithWhite:0.85 alpha:1]];
-   		[resultsTable setBackgroundColor:[UIColor colorWithRed:0.92 green:0.92 blue:0.92 alpha:1]];
-   		[resultsTable setDelegate:self];
-   		[resultsTable setDataSource:self];
-   		[resultsTable setHidden:YES];
-   		[self.view addSubview:resultsTable];
-        [self.view  bringSubviewToFront:resultsTable];
-   		popoverController = nil;
+   		[self.resultsTable setSeparatorColor:[UIColor colorWithWhite:0.85 alpha:1]];
+   		[self.resultsTable setBackgroundColor:[UIColor colorWithRed:0.92 green:0.92 blue:0.92 alpha:1]];
+   		[self.resultsTable setDelegate:self];
+   		[self.resultsTable setDataSource:self];
+   		[self.resultsTable setHidden:YES];
+   		[self.view addSubview:self.resultsTable];
+        [self.view  bringSubviewToFront:self.resultsTable];
+   		self.popoverController = nil;
    	}
     
-    //self.tableView.allowsSelection = NO;
-    
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
-   	[[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
-    
-    
+	NSNotificationCenter *notifCenter = [NSNotificationCenter defaultCenter];
+
+    [notifCenter addObserver:self
+					selector:@selector(keyboardWillShow:)
+						name:UIKeyboardWillShowNotification
+					  object:nil];
+	
+   	[notifCenter addObserver:self
+					selector:@selector(keyboardWillHide:)
+						name:UIKeyboardWillHideNotification
+					  object:nil];
     
 }
 
@@ -132,6 +149,46 @@
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
+
+- (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation
+{
+	if (self.searchResultIsVisible)
+	{
+		CGRect resultsFrame = self.resultsTable.frame;
+		resultsFrame.size.height = self.view.frame.size.height - _keyboardHeight - resultsFrame.origin.y;
+		self.resultsTable.frame = resultsFrame;
+	}
+}
+
+#pragma mark - Token field properties
+
+- (void)setTokenizingCharacters:(NSCharacterSet *)tokenizingCharacters
+{
+	if (_tokenizingCharacters != tokenizingCharacters)
+	{
+		_tokenizingCharacters = tokenizingCharacters;
+		
+		for (TITokenField *tokenField in self.tokenFields)
+		{
+			[tokenField setTokenizingCharacters:tokenizingCharacters];
+		}
+	}
+}
+
+- (void)setTokenFieldFont:(UIFont *)tokenFieldFont
+{
+	
+	if (_tokenFieldFont != tokenFieldFont)
+	{
+		_tokenFieldFont = tokenFieldFont;
+		
+		for (TITokenField *tokenField in self.tokenFields)
+		{
+			[tokenField setFont:tokenFieldFont];
+		}
+	}
+}
+
 
 #pragma mark - Table view data source
 
@@ -152,10 +209,9 @@
         }
         
         return rows;
-        
     }
-    if (tableView == resultsTable) {
-        return resultsArray.count;
+    if (tableView == self.resultsTable) {
+        return self.resultsArray.count;
     }
     return 0;
     
@@ -164,16 +220,19 @@
 
 - (CGFloat)tableView:(UITableView *)tableView heightForRowAtIndexPath:(NSIndexPath *)indexPath {
     
-    //TITokenField *tokenField =  _tokenFields[[NSString stringWithFormat:@"%d", indexPath.row]];
     if (tableView == self.tableView) {
         
         
-        if(indexPath.row < self.tokenDataSource.numberOfTokenRows) {
-            //if (tokenField) {
-            TITokenField *tokenField = _tokenFields[[self.tokenDataSource tokenFieldPromptAtRow:(NSUInteger) indexPath.row]];
+        if (indexPath.row < self.tokenDataSource.numberOfTokenRows)
+		{
+			NSString *promptAtRow =
+			[self.tokenDataSource tokenFieldPromptAtRow:(NSUInteger)indexPath.row];
+            TITokenField *tokenField = self.tokenFields[promptAtRow];
             CGFloat height = tokenField.frame.size.height;
             return height;
-        } else {
+        }
+		else
+		{
             // a row that is not a token field: delegate
             if ([self.tokenDataSource respondsToSelector:@selector(tokenTableView:heightForRowAtIndexPath:)]) {
                 
@@ -184,7 +243,7 @@
         }
         
     }
-    if (tableView == resultsTable) {
+    if (tableView == self.resultsTable) {
         //todo
         //        if (tokenField && [tokenField.delegate respondsToSelector:@selector(tokenField:resultsTableView:heightForRowAtIndexPath:)]){
         //       		return [tokenField.delegate tokenField:tokenField resultsTableView:tableView heightForRowAtIndexPath:indexPath];
@@ -206,36 +265,24 @@
         static NSString *CellIdentifier = @"Cell";
         
         // any TokenCell
-        if (indexPath.row < self.tokenDataSource.numberOfTokenRows) {
-            cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
-            if (!cell) {
+        if (indexPath.row < self.tokenDataSource.numberOfTokenRows)
+		{
+
+            if (!cell)
+			{
                 cell = [[UITableViewCell alloc] initWithStyle:UITableViewCellStyleDefault reuseIdentifier:CellIdentifier];
-                // get the token field from dictionary using the delegated title text as key
-                cell.backgroundColor = [UIColor lightGrayColor];
-            }
-            
-            
-            TITokenField *tokenField = _tokenFields[[self.tokenDataSource tokenFieldPromptAtRow:(NSUInteger) indexPath.row]];
-            
-            //tokenField.backgroundColor = [UIColor grayColor];
-            BOOL addSubview = YES;
-            for (UIView * subView in [cell.contentView subviews]) {
-                if(subView == tokenField) {
-                    addSubview = NO;
-                    break;
-                }
-                
-            }
-            
-            
-            if(addSubview) {
+
+				NSString *promptAtRow =
+				[self.tokenDataSource tokenFieldPromptAtRow:(NSUInteger)indexPath.row];
+
+				TITokenField *tokenField = self.tokenFields[promptAtRow];
                 [cell.contentView addSubview:tokenField];
             }
             
-            
-            
-            
-        } else {
+        }
+		
+		else
+		{
             // another cell that is not a TIToken (e.g. subject, body)
             if ([self.tokenDataSource respondsToSelector:@selector(tokenTableView:cellForRowAtIndexPath:)]) {
                 
@@ -249,19 +296,24 @@
     
     
     // DISPLAYING THE SEARCH RESULT
-    if (tableView == resultsTable) {
-        id representedObject = [resultsArray objectAtIndex:(NSUInteger) indexPath.row];
+    if (tableView == self.resultsTable) {
+        id representedObject = self.resultsArray[(NSUInteger) indexPath.row];
         
 
         //todo, shall the delegate be able to give a result cell ?
-        if ([_currentSelectedTokenField.delegate respondsToSelector:@selector(tokenField:resultsTableView:cellForRepresentedObject:)]) {
-            return [_currentSelectedTokenField.delegate tokenField:_currentSelectedTokenField resultsTableView:tableView cellForRepresentedObject:representedObject];
+        if ([self.currentSelectedTokenField.delegate respondsToSelector:@selector(tokenField:resultsTableView:cellForRepresentedObject:)])
+		{
+            return [self.currentSelectedTokenField.delegate tokenField:self.currentSelectedTokenField
+													  resultsTableView:tableView
+											  cellForRepresentedObject:representedObject];
         }
         
         static NSString *CellIdentifier = @"ResultsCell";
         cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
 
-        NSString *subtitle = [self searchResultSubtitleForRepresentedObject:representedObject inTokenField:_currentSelectedTokenField];
+        NSString *subtitle =
+		[self searchResultSubtitleForRepresentedObject:representedObject
+										  inTokenField:self.currentSelectedTokenField];
         
         if (!cell) {
             
@@ -285,8 +337,6 @@
     return cell;
 }
 
-
-
 #pragma mark - Table view delegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
@@ -299,11 +349,11 @@
         [tableView deselectRowAtIndexPath:indexPath animated:YES];
     }
 
-    if (tableView == resultsTable) {
+    if (tableView == self.resultsTable) {
         
-        TITokenField *tokenField = _currentSelectedTokenField;
+        TITokenField *tokenField = self.currentSelectedTokenField;
         if (tokenField) {
-            id representedObject = [resultsArray objectAtIndex:(NSUInteger) indexPath.row];
+            id representedObject = self.resultsArray[(NSUInteger) indexPath.row];
             TIToken *token = [[TIToken alloc] initWithTitle:[self displayStringForRepresentedObject:representedObject] representedObject:representedObject];
             [tokenField addToken:token];
             
@@ -324,7 +374,7 @@
         [self.delegate tokenTableViewController:self didSelectTokenField:field];
     }
     
-    _currentSelectedTokenField = field;
+    self.currentSelectedTokenField = field;
     
     UIView * cell = field.superview;
     while (cell && ![cell isKindOfClass:[UITableViewCell class]]) {
@@ -335,8 +385,8 @@
     
     
     
-	[resultsArray removeAllObjects];
-	[resultsTable reloadData];
+	[self.resultsArray removeAllObjects];
+	[self.resultsTable reloadData];
 }
 
 - (void)tokenFieldDidEndEditing:(TITokenField *)field {
@@ -344,7 +394,7 @@
     
     [self setSearchResultsVisible:NO forTokenField:field];
     
-    _currentSelectedTokenField = nil;
+    self.currentSelectedTokenField = nil;
     
     if([self.delegate respondsToSelector:@selector(tokenTableViewController:didSelectTokenField:)]) {
         [self.delegate tokenTableViewController:self didSelectTokenField:field];
@@ -372,7 +422,7 @@
 #pragma mark Results Methods
 - (NSString *)displayStringForRepresentedObject:(id)object {
     
-    TITokenField *tokenField = _currentSelectedTokenField;
+    TITokenField *tokenField = self.currentSelectedTokenField;
     
 	if ([tokenField.delegate respondsToSelector:@selector(tokenField:displayStringForRepresentedObject:)]){
 		return [tokenField.delegate tokenField:tokenField displayStringForRepresentedObject:object];
@@ -386,7 +436,7 @@
 }
 
 - (NSString *)searchResultStringForRepresentedObject:(id)object   {
-    TITokenField *tokenField = _currentSelectedTokenField;
+    TITokenField *tokenField = self.currentSelectedTokenField;
     
 	if ([tokenField.delegate respondsToSelector:@selector(tokenField:searchResultStringForRepresentedObject:)]){
 		return [tokenField.delegate tokenField:tokenField searchResultStringForRepresentedObject:object];
@@ -420,14 +470,6 @@
 	}
 	else
 	{
-        //CGPoint tableOrigin = [tokenField convertPoint:tokenField.frame.origin toView:self.view];
-        
-        //CGPoint newOrigin = [self.tableView convertPoint:self.tableView.bounds.origin toView:tokenField];
-        //CGRect newFrame = ((CGRect) {newOrigin, tokenField.frame.size});
-        
-        //CGFloat tokenFieldBottom = CGRectGetMaxY([tokenField convertRect:newFrame toView:self.view]);
-        
-        CGFloat tokenFieldBottom = CGRectGetMaxY([tokenField convertRect:tokenField.frame toView:self.view]);
         NSInteger scrollToRow = 0;
         
         if (visible) {
@@ -440,11 +482,6 @@
                     break;
                 }
             }
-            
-            // size is from the token till the beginning of the keyboard
-            resultsTable.frame = CGRectMake(0, tokenFieldBottom + 1, self.view.bounds.size.width, self.view.bounds.size.height - _keyboardHeight - tokenField.frame.size.height);
-            [self.view bringSubviewToFront:resultsTable];
-            
             
             _contentOffsetBeforeResultTable = self.tableView.contentOffset;
             
@@ -459,46 +496,69 @@
             }
             
             NSIndexPath * idx = [NSIndexPath indexPathForRow:scrollToRow inSection:0];
-            //[self.tableView scrollRectToVisible:newFrame animated:YES];
-            [self.tableView scrollToRowAtIndexPath:idx atScrollPosition:UITableViewScrollPositionTop animated:YES];
-        } else {
+
+			[UIView animateWithDuration:0.3 animations:^{
+				[self.tableView scrollToRowAtIndexPath:idx atScrollPosition:UITableViewScrollPositionTop animated:NO];
+				// size is from the token till the beginning of the keyboard
+				self.resultsTable.frame = CGRectMake(0, tokenField.frame.size.height + 1, self.view.bounds.size.width, self.view.bounds.size.height - _keyboardHeight - tokenField.frame.size.height);
+			} completion:^(BOOL finished) {
+				// Make it visible only if the the result table is still
+				// meant to be visible. For example the user might have
+				// continued typing more text that does not match anything
+				// and thus would have already hidden the table during the
+				// animation
+				if (_searchResultIsVisible)
+				{
+					[self.view bringSubviewToFront:self.resultsTable];
+					[self.resultsTable setHidden:NO];
+				}
+			}];
+	
+        }
+		
+		else {
             // hiding result table, scroll back to where we were,
-            [self.tableView setContentOffset:_contentOffsetBeforeResultTable];
+			[self.tableView setContentOffset:_contentOffsetBeforeResultTable];
+			[self.resultsTable setHidden:!visible];
         }
         
-        
-        [resultsTable setHidden:!visible];
-        [tokenField setResultsModeEnabled:visible];
-        
-     
-        
+		[tokenField setResultsModeEnabled:visible];
         
         self.tableView.scrollEnabled = !visible;
-        
-        
     }
 }
 
 - (void)resultsForSearchString:(NSString *)searchString {
     
-    TITokenField *tokenField = _currentSelectedTokenField;
+    TITokenField *tokenField = self.currentSelectedTokenField;
 	// The brute force searching method.
 	// Takes the input string and compares it against everything in the source array.
 	// If the source is massive, this could take some time.
 	// You could always subclass and override this if needed or do it on a background thread.
 	// GCD would be great for that.
     
-	[resultsArray removeAllObjects];
-	[resultsTable reloadData];
+	[self.resultsArray removeAllObjects];
+	[self.resultsTable reloadData];
     
-	[sourceArray enumerateObjectsUsingBlock:^(id sourceObject, NSUInteger idx, BOOL *stop){
+	[self.sourceArray enumerateObjectsUsingBlock:^(id sourceObject, NSUInteger idx, BOOL *stop){
         
 		NSString * query = [self searchResultStringForRepresentedObject:sourceObject];
         NSString * querySubtitle = [self searchResultSubtitleForRepresentedObject:sourceObject inTokenField:tokenField];
-		if ([query rangeOfString:searchString options:NSCaseInsensitiveSearch].location != NSNotFound || (querySubtitle && [querySubtitle rangeOfString:searchString options:NSCaseInsensitiveSearch].location != NSNotFound)){
-            
-			__block BOOL shouldAdd = ![resultsArray containsObject:sourceObject];
-			if (shouldAdd && !showAlreadyTokenized){
+		
+		BOOL hasQueryAndMatchesSearch =
+		(query != nil) &&
+		[query rangeOfString:searchString
+					 options:NSCaseInsensitiveSearch].location != NSNotFound;
+		
+		BOOL hasQuerySubtitleAndMatchesSearch =
+		(querySubtitle != nil) &&
+		[querySubtitle rangeOfString:searchString
+							 options:NSCaseInsensitiveSearch].location != NSNotFound;
+		
+		if (hasQueryAndMatchesSearch || hasQuerySubtitleAndMatchesSearch)
+		{
+			__block BOOL shouldAdd = ![self.resultsArray containsObject:sourceObject];
+			if (shouldAdd && !self.showAlreadyTokenized){
                 
 				[tokenField.tokens enumerateObjectsUsingBlock:^(TIToken * token, NSUInteger idx, BOOL *secondStop){
 					if ([token.representedObject isEqual:sourceObject]){
@@ -508,15 +568,15 @@
 				}];
 			}
             
-			if (shouldAdd) [resultsArray addObject:sourceObject];
+			if (shouldAdd) [self.resultsArray addObject:sourceObject];
 		}
 	}];
     
-	[resultsArray sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
+	[self.resultsArray sortUsingComparator:^NSComparisonResult(id obj1, id obj2) {
 		return [[self searchResultStringForRepresentedObject:obj1 ] localizedCaseInsensitiveCompare:[self searchResultStringForRepresentedObject:obj2]];
 	}];
-	[resultsTable reloadData];
-	[self setSearchResultsVisible:(resultsArray.count > 0) forTokenField:tokenField];
+	[self.resultsTable reloadData];
+	[self setSearchResultsVisible:(self.resultsArray.count > 0) forTokenField:tokenField];
 }
 
 - (void)presentpopoverAtTokenFieldCaretAnimated:(BOOL)animated inTokenField:(TITokenField *)tokenField {
@@ -544,7 +604,7 @@
 
 - (void)keyboardWillShow:(NSNotification *)notification {
     
-	CGRect keyboardRect = [[[notification userInfo] objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+	CGRect keyboardRect = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
 	_keyboardHeight = keyboardRect.size.height > keyboardRect.size.width ? keyboardRect.size.width : keyboardRect.size.height;
     
 }

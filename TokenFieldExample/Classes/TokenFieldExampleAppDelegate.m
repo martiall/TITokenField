@@ -8,24 +8,26 @@
 
 #import "TokenFieldExampleAppDelegate.h"
 #import "TokenFieldExampleViewController.h"
+#import "TITokenTableViewController.h"
+#import "TokenTableExampleViewController.h"
 
 @implementation TokenFieldExampleAppDelegate
 
-- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
+- (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {    
 	
 	window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	
-	TokenFieldExampleViewController * viewController = [[TokenFieldExampleViewController alloc] init];
-	UINavigationController * navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
-    UITabBarController *tabBarController = [[UITabBarController alloc] init];
-    [tabBarController setViewControllers:@[navigationController]];
-	
-    [window setRootViewController:tabBarController];
+    TokenTableExampleViewController * viewController = [[TokenTableExampleViewController alloc] init];
+	viewController.tokenDataSource = viewController;
+    viewController.delegate = viewController;
+
+	UINavigationController *navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
+    [window setRootViewController:navigationController];
+
 	
     [window makeKeyAndVisible];
-    
+
     return YES;
 }
-
 
 @end
