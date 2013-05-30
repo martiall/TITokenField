@@ -23,6 +23,6 @@ THIS SOFTWARE IS PROVIDED BY TOM IRVING "AS IS" AND ANY EXPRESS OR IMPLIED WARRA
   s.author       = { "Tom Irving" => "info@thermoglobalnuclearwar.com" }
   s.source       = { :git => "https://github.com/martiall/TITokenField.git" }
   s.platform     = :ios
-  s.source_files = 'TITokenContact.{h,m}', 'TITokenField.{h,m}', 'TITokenTableViewController.{h,m}'
+  s.source_files = '*.{h,m}'
   s.requires_arc = true
 end
