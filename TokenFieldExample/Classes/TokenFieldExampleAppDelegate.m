@@ -8,7 +8,7 @@
 
 #import "TokenFieldExampleAppDelegate.h"
 #import "TokenFieldExampleViewController.h"
-
+#import "TokenTableExampleViewController.h"
 @implementation TokenFieldExampleAppDelegate {
 	UIWindow * _window;
 }
@@ -17,7 +17,7 @@
 	
 	_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 	
-	TokenFieldExampleViewController * viewController = [[TokenFieldExampleViewController alloc] init];
+	TokenTableExampleViewController * viewController = [[TokenTableExampleViewController alloc] init];
 	UINavigationController * navigationController = [[UINavigationController alloc] initWithRootViewController:viewController];
     UITabBarController *tabBarController = [[UITabBarController alloc] init];
     [tabBarController setViewControllers:@[navigationController]];

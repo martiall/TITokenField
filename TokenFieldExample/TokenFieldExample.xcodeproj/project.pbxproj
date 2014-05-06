@@ -13,6 +13,11 @@
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		288765A50DF7441C002DB57D /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 288765A40DF7441C002DB57D /* CoreGraphics.framework */; };
 		28D7ACF80DDB3853001CB0EB /* TokenFieldExampleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 28D7ACF70DDB3853001CB0EB /* TokenFieldExampleViewController.m */; };
+		4B135991191935FB00B2601F /* TokenTableExampleViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B135990191935FB00B2601F /* TokenTableExampleViewController.m */; };
+		4B1359961919360400B2601F /* TITokenContact.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1359931919360400B2601F /* TITokenContact.m */; };
+		4B1359971919360400B2601F /* TITokenTableViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 4B1359951919360400B2601F /* TITokenTableViewController.m */; };
+		4B13599A1919371100B2601F /* AddressBook.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B1359981919371100B2601F /* AddressBook.framework */; };
+		4B13599B1919371100B2601F /* AddressBookUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B1359991919371100B2601F /* AddressBookUI.framework */; };
 		E20C35C6160286F500DFF810 /* Default-568h@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = E20C35C5160286F500DFF810 /* Default-568h@2x.png */; };
 		E259CED91530FBE6002D0609 /* TITokenField.m in Sources */ = {isa = PBXBuildFile; fileRef = E259CED81530FBE6002D0609 /* TITokenField.m */; };
 		E28950A215135A4E000FB56F /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = E28950A115135A4E000FB56F /* QuartzCore.framework */; };
@@ -30,6 +35,14 @@
 		28D7ACF70DDB3853001CB0EB /* TokenFieldExampleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TokenFieldExampleViewController.m; sourceTree = "<group>"; };
 		29B97316FDCFA39411CA2CEA /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		32CA4F630368D1EE00C91783 /* TokenFieldExample_Prefix.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TokenFieldExample_Prefix.pch; sourceTree = "<group>"; };
+		4B13598F191935FB00B2601F /* TokenTableExampleViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TokenTableExampleViewController.h; sourceTree = "<group>"; };
+		4B135990191935FB00B2601F /* TokenTableExampleViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TokenTableExampleViewController.m; sourceTree = "<group>"; };
+		4B1359921919360400B2601F /* TITokenContact.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TITokenContact.h; path = ../../TITokenContact.h; sourceTree = "<group>"; };
+		4B1359931919360400B2601F /* TITokenContact.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TITokenContact.m; path = ../../TITokenContact.m; sourceTree = "<group>"; };
+		4B1359941919360400B2601F /* TITokenTableViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TITokenTableViewController.h; path = ../../TITokenTableViewController.h; sourceTree = "<group>"; };
+		4B1359951919360400B2601F /* TITokenTableViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = TITokenTableViewController.m; path = ../../TITokenTableViewController.m; sourceTree = "<group>"; };
+		4B1359981919371100B2601F /* AddressBook.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBook.framework; path = System/Library/Frameworks/AddressBook.framework; sourceTree = SDKROOT; };
+		4B1359991919371100B2601F /* AddressBookUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AddressBookUI.framework; path = System/Library/Frameworks/AddressBookUI.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* TokenFieldExample-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "TokenFieldExample-Info.plist"; plistStructureDefinitionIdentifier = "com.apple.xcode.plist.structure-definition.iphone.info-plist"; sourceTree = "<group>"; };
 		E20C35C5160286F500DFF810 /* Default-568h@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-568h@2x.png"; sourceTree = "<group>"; };
 		E259CED71530FBE6002D0609 /* TITokenField.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = TITokenField.h; path = ../../TITokenField.h; sourceTree = "<group>"; };
@@ -44,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B13599A1919371100B2601F /* AddressBook.framework in Frameworks */,
+				4B13599B1919371100B2601F /* AddressBookUI.framework in Frameworks */,
 				E28950A215135A4E000FB56F /* QuartzCore.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
 				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
@@ -57,6 +72,8 @@
 		080E96DDFE201D6D7F000001 /* Classes */ = {
 			isa = PBXGroup;
 			children = (
+				4B13598F191935FB00B2601F /* TokenTableExampleViewController.h */,
+				4B135990191935FB00B2601F /* TokenTableExampleViewController.m */,
 				1D3623240D0F684500981E51 /* TokenFieldExampleAppDelegate.h */,
 				1D3623250D0F684500981E51 /* TokenFieldExampleAppDelegate.m */,
 				28D7ACF60DDB3853001CB0EB /* TokenFieldExampleViewController.h */,
@@ -107,6 +124,8 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4B1359981919371100B2601F /* AddressBook.framework */,
+				4B1359991919371100B2601F /* AddressBookUI.framework */,
 				E28950A115135A4E000FB56F /* QuartzCore.framework */,
 				1DF5F4DF0D08C38300B7A737 /* UIKit.framework */,
 				1D30AB110D05D00D00671497 /* Foundation.framework */,
@@ -118,6 +137,10 @@
 		E2EC1AC612F58B3B00BB0A8B /* TITokenField */ = {
 			isa = PBXGroup;
 			children = (
+				4B1359921919360400B2601F /* TITokenContact.h */,
+				4B1359931919360400B2601F /* TITokenContact.m */,
+				4B1359941919360400B2601F /* TITokenTableViewController.h */,
+				4B1359951919360400B2601F /* TITokenTableViewController.m */,
 				E259CED71530FBE6002D0609 /* TITokenField.h */,
 				E259CED81530FBE6002D0609 /* TITokenField.m */,
 				E2EC195C12F4AA7A00BB0A8B /* Names.h */,
@@ -189,8 +212,11 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4B135991191935FB00B2601F /* TokenTableExampleViewController.m in Sources */,
 				1D60589B0D05DD56006BFB54 /* main.m in Sources */,
 				1D3623260D0F684500981E51 /* TokenFieldExampleAppDelegate.m in Sources */,
+				4B1359961919360400B2601F /* TITokenContact.m in Sources */,
+				4B1359971919360400B2601F /* TITokenTableViewController.m in Sources */,
 				28D7ACF80DDB3853001CB0EB /* TokenFieldExampleViewController.m in Sources */,
 				E2EC196012F4AA7A00BB0A8B /* Names.m in Sources */,
 				E259CED91530FBE6002D0609 /* TITokenField.m in Sources */,

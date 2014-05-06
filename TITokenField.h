@@ -96,6 +96,7 @@ typedef enum {
 @property (nonatomic, readonly) int numberOfLines;
 @property (nonatomic) int tokenLimit;
 @property (nonatomic, strong) NSCharacterSet * tokenizingCharacters;
+@property (nonatomic, weak) NSString * promptText;
 
 - (void)addToken:(TIToken *)title;
 - (TIToken *)addTokenWithTitle:(NSString *)title;
